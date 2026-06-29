@@ -67,7 +67,13 @@ class FusionForSequenceClassification(PreTrainedModel):
         input_ids: torch.Tensor,
         attention_mask: torch.Tensor,
         extra_features: Optional[torch.Tensor] = None,
+        labels: Optional[torch.Tensor] = None,
     ) -> SequenceClassifierOutput:
+        # `labels` is accepted but unused here -- WeightedLossTrainer.compute_loss pops it from
+        # the batch itself. It still needs to be a declared parameter: Trainer inspects this
+        # signature to decide which batch keys to keep, and silently drops anything it doesn't
+        # recognize before compute_loss ever sees the batch.
+        del labels
         outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
         cls_embedding = outputs.last_hidden_state[:, 0, :]
         logits = self.classifier(cls_embedding, extra_features)
