@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+
+# Data (not redistributable / generated locally)
+*.csv
+data/
+
+# Model checkpoints and run artifacts
+checkpoints/
+runs/
+*.pt
+*.bin
+
+# OS / editor
+.DS_Store
