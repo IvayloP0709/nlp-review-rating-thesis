@@ -9,6 +9,7 @@ venv/
 
 # Data (not redistributable / generated locally)
 *.csv
+!results/metrics_thesis.csv
 data/
 
 # Model checkpoints and run artifacts

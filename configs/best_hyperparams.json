@@ -1,0 +1,69 @@
+{
+  "_comment": "Best hyperparameters per experiment, as reported by the thesis's random search (Sections 5.1-5.3). Historical reference, not re-validated -- the dataset used to find them is no longer available.",
+  "rf_none_text": {
+    "n_estimators": 1000,
+    "bootstrap": true,
+    "max_samples": 0.5,
+    "max_features": "sqrt",
+    "oob_score": true,
+    "min_samples_leaf": 1
+  },
+  "bert_none_text": {
+    "learning_rate": 3e-5,
+    "batch_size": 32,
+    "epochs": 4,
+    "dropout": 0.0,
+    "gradient_accumulation_steps": 4
+  },
+  "roberta_none_text": {
+    "learning_rate": 3e-5,
+    "batch_size": 32,
+    "epochs": 3,
+    "dropout": 0.1,
+    "gradient_accumulation_steps": 4
+  },
+  "bert_weight_text": {
+    "learning_rate": 5e-5,
+    "batch_size": 32,
+    "epochs": 4,
+    "dropout": 0.5,
+    "gradient_accumulation_steps": 3
+  },
+  "roberta_weight_text": {
+    "learning_rate": 3e-5,
+    "batch_size": 32,
+    "epochs": 5,
+    "dropout": 0.1,
+    "gradient_accumulation_steps": 4
+  },
+  "bert_oversample_text": {
+    "learning_rate": 3e-5,
+    "batch_size": 32,
+    "epochs": 5,
+    "dropout": 0.0,
+    "gradient_accumulation_steps": 4
+  },
+  "roberta_oversample_text": {
+    "learning_rate": 3e-5,
+    "batch_size": 32,
+    "epochs": 5,
+    "dropout": 0.1,
+    "gradient_accumulation_steps": 4
+  },
+  "bert_oversample_text_extra": {
+    "learning_rate": 5e-5,
+    "batch_size": 16,
+    "epochs": 3,
+    "dropout": 0.1,
+    "gradient_accumulation_steps": 3,
+    "weight_decay": 0.08
+  },
+  "roberta_oversample_text_extra": {
+    "learning_rate": 3e-5,
+    "batch_size": 32,
+    "epochs": 5,
+    "dropout": 0.1,
+    "gradient_accumulation_steps": 4,
+    "weight_decay": 0.1
+  }
+}

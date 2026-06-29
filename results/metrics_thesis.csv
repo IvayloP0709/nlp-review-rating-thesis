@@ -1,0 +1,11 @@
+run_name,model,balance,features,accuracy,f1_weighted,source
+rf_none_text,rf,none,text,0.5517,0.5190,thesis_table_1
+bert_none_text,bert,none,text,0.6156,0.6079,thesis_table_1
+roberta_none_text,roberta,none,text,0.6469,0.6345,thesis_table_1
+bert_weight_text,bert,weight,text,0.6224,0.6185,thesis_table_1
+roberta_weight_text,roberta,weight,text,0.6316,0.6212,thesis_table_1
+bert_oversample_text,bert,oversample,text,0.6447,0.6458,thesis_table_1
+roberta_oversample_text,roberta,oversample,text,0.6395,0.6281,thesis_table_1
+rf_none_text_extra,rf,none,text_extra,0.5620,0.5202,thesis_table_1
+bert_oversample_text_extra,bert,oversample,text_extra,0.6387,0.6424,thesis_table_1
+roberta_oversample_text_extra,roberta,oversample,text_extra,0.6352,0.6333,thesis_table_1
