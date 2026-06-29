@@ -61,7 +61,8 @@ signal by construction.
    weight for class 0..4." It was actually the weight of the first 5 training rows. Fixed in
    `src/data.py::class_weights()`, which now returns one weight per class, indexed by class id.
 3. **Silent "nan" injection.** `resp_text` (the managerial response) is null for roughly 89% of
-   rows (per `RF.ipynb`'s `df.info()`: 1,510 of 14,075 non-null). Every script built the model
+   rows (the original RF baseline notebook's `df.info()` output showed 1,510 of 14,075 rows with a
+   non-null `resp_text`, before that notebook was removed in this cleanup). Every script built the model
    input with `str(value)`, and `str(float('nan'))` is the literal string `"nan"` -- so most
    training examples, across every experiment including the plain-text baseline, had the substring
    "nan" appended to their review text. Fixed in `src/data.py::combine_text_fields()`, which uses
