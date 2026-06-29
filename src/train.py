@@ -64,6 +64,7 @@ class ExperimentConfig:
     dropout: float = 0.1
     weight_decay: float = 0.01
     gradient_accumulation_steps: int = 1
+    rf_params: dict = field(default_factory=dict)  # overrides for build_rf_pipeline, used by src.tune
     smoke_test: bool = False
     seed: int = 42
 
@@ -79,6 +80,7 @@ class ExperimentConfig:
 @dataclass
 class ExperimentResult:
     config: ExperimentConfig
+    val_f1_weighted: float
     accuracy: float
     f1_weighted: float
     confusion: np.ndarray = field(repr=False)
@@ -127,9 +129,12 @@ def _maybe_oversample(train_df: pd.DataFrame, feature_columns: Sequence[str]) ->
     return X.assign(label=y.to_numpy())
 
 
-def _build_result(config: ExperimentConfig, y_true: np.ndarray, y_pred: np.ndarray) -> ExperimentResult:
+def _build_result(
+    config: ExperimentConfig, val_f1_weighted: float, y_true: np.ndarray, y_pred: np.ndarray
+) -> ExperimentResult:
     return ExperimentResult(
         config=config,
+        val_f1_weighted=val_f1_weighted,
         accuracy=accuracy_score(y_true, y_pred),
         f1_weighted=f1_score(y_true, y_pred, average="weighted"),
         confusion=confusion_matrix(y_true, y_pred),
@@ -143,11 +148,15 @@ def _run_rf(config: ExperimentConfig, splits: Splits) -> ExperimentResult:
         train_df = _maybe_oversample(train_df, feature_columns)
     class_weight = "balanced" if config.balance == "weight" else None
 
-    pipeline = build_rf_pipeline(extra_feature_columns=feature_columns, class_weight=class_weight)
+    pipeline = build_rf_pipeline(extra_feature_columns=feature_columns, class_weight=class_weight, **config.rf_params)
     columns = ["combined_text", *feature_columns]
     pipeline.fit(train_df[columns], train_df["label"])
-    preds = pipeline.predict(splits.test[columns])
-    return _build_result(config, splits.test["label"].to_numpy(), preds)
+
+    val_preds = pipeline.predict(splits.val[columns])
+    val_f1 = f1_score(splits.val["label"], val_preds, average="weighted")
+
+    test_preds = pipeline.predict(splits.test[columns])
+    return _build_result(config, val_f1, splits.test["label"].to_numpy(), test_preds)
 
 
 def compute_metrics(eval_pred) -> dict:
@@ -219,10 +228,11 @@ def _run_transformer(config: ExperimentConfig, splits: Splits) -> ExperimentResu
             callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
         )
         trainer.train()
+        val_metrics = trainer.evaluate()
         test_output = trainer.predict(test_dataset)
 
     preds = np.argmax(test_output.predictions, axis=-1)
-    return _build_result(config, test_output.label_ids, preds)
+    return _build_result(config, val_metrics["eval_f1_weighted"], test_output.label_ids, preds)
 
 
 def run_experiment(config: ExperimentConfig) -> ExperimentResult:
@@ -256,6 +266,7 @@ def append_metrics_row(result: ExperimentResult, output_dir: Path) -> Path:
         "model": result.config.model,
         "balance": result.config.balance,
         "features": result.config.features,
+        "val_f1_weighted": result.val_f1_weighted,
         "accuracy": result.accuracy,
         "f1_weighted": result.f1_weighted,
     }
@@ -316,7 +327,17 @@ def main(argv: Optional[Sequence[str]] = None) -> ExperimentResult:
     output_dir = Path(args.output_dir)
     figure_path = save_confusion_matrix(result, output_dir / "figures")
     metrics_path = append_metrics_row(result, output_dir)
-    print(json.dumps({"run_name": config.run_name, "accuracy": result.accuracy, "f1_weighted": result.f1_weighted}, indent=2))
+    print(
+        json.dumps(
+            {
+                "run_name": config.run_name,
+                "val_f1_weighted": result.val_f1_weighted,
+                "accuracy": result.accuracy,
+                "f1_weighted": result.f1_weighted,
+            },
+            indent=2,
+        )
+    )
     print(f"Confusion matrix written to {figure_path}")
     print(f"Metrics appended to {metrics_path}")
     return result
